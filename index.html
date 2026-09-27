@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemistry Lab Equipment Drawer & Quiz</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            labslate: '#0f172a',
+            drawerwood: '#78350f',
+            drawerdark: '#451a03',
+            foam: '#090d16',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Laboratory Workbench Textures */
+    .lab-bench {
+      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #080d1a 100%);
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+    }
+    .drawer-wood-grain {
+      background: linear-gradient(180deg, #92400e 0%, #78350f 50%, #451a03 100%);
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .benchtop-station {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .foam-cutout {
+      background: radial-gradient(circle at center, #1e293b 0%, #080c16 100%);
+      box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .item-hover-glow:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 28px -4px rgba(56, 189, 248, 0.35), inset 0 0 12px rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+    .equipment-svg {
+      filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.45));
+      transition: all 0.25s ease-out;
+    }
+    .foam-cutout:hover .equipment-svg {
+      filter: drop-shadow(0px 10px 16px rgba(56, 189, 248, 0.5));
+    }
+
+    /* Target highlight during quiz */
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+      70% { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+    .quiz-hint-pulse {
+      animation: pulse-ring 1.8s infinite;
+      border-color: #f59e0b !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-teal-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-white font-bold text-lg">
+        <i class="fa-solid fa-flask-vial"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold tracking-tight text-white">Lab Drawer Equipment Explorer</h1>
+          <span class="text-[11px] px-2 py-0.5 rounded-full font-medium bg-cyan-950 text-cyan-400 border border-cyan-800/60">Slideshow Edition</span>
+        </div>
+        <p class="text-xs text-slate-400">Tactile Interactive Chemistry Lab Drawer & Workbench</p>
+      </div>
+    </div>
+
+    <!-- Mode Navigation Switcher -->
+    <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800 flex-wrap">
+      <button id="modeExploreBtn" onclick="switchMode('explore')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition bg-cyan-600 text-white shadow">
+        <i class="fa-solid fa-compass"></i>
+        <span>Explore Drawers</span>
+      </button>
+      <button id="modeQuizBtn" onclick="switchMode('quiz')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-clipboard-question"></i>
+        <span>Find in Drawer Quiz</span>
+      </button>
+      <button id="modeAssemblyBtn" onclick="switchMode('assembly')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition text-slate-400 hover:text-slate-200">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+        <span>Setup Challenge</span>
+      </button>
+      <button onclick="toggleSound()" id="soundBtn" class="px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-200 transition border border-slate-800 hover:border-slate-700 ml-1" title="Toggle Sound Effects">
+        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 gap-5">
+
+    <!-- =========================================================
+         EXPLORE MODE SECTION
+         ========================================================= -->
+    <section id="exploreSection" class="flex-1 flex flex-col gap-5">
+      
+      <!-- Instructions & Search Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 px-5">
+        <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-300">
+          <i class="fa-regular fa-hand-pointer text-cyan-400 text-base"></i>
+          <span>Click a drawer handle or the station tab to pull it open, then click any item to inspect its slideshow notes, exact sizes, and safety rules.</span>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="relative w-full sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input type="text" id="equipmentSearch" oninput="handleSearch()" placeholder="Search beaker, clamp, hot hands..." class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+          </div>
+          <button onclick="resetDrawerFilter()" class="px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-200 rounded-lg border border-slate-800 hover:border-slate-700 shrink-0">Clear</button>
+        </div>
+      </div>
+
+      <!-- WORKBENCH CABINET & DRAWER UNIT -->
+      <div class="lab-bench rounded-3xl border border-slate-800 p-4 sm:p-7 shadow-2xl relative">
+        
+        <!-- Drawer Tabs / Pull handles -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5" id="drawerPullsContainer">
+          <!-- Drawer 1 -->
+          <button onclick="selectDrawer(1)" id="drawerTab1" class="drawer-wood-grain text-left p-3.5 px-4 rounded-xl flex items-center justify-between border border-amber-800/70 transition-all group ring-2 ring-cyan-500 shadow-cyan-950/40">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span class="text-[10px] uppercase tracking-wider font-mono font-bold text-amber-200/90">Drawer 01</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold text-amber-50 mt-0.5 truncate">Glassware & Vessels</p>
+              <p class="text-[10px] text-amber-200/60 truncate">Beakers, Flasks, Cylinders</p>
+            </div>
+            <div class="w-8 h-4 rounded bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 shadow-inner flex items-center justify-center border border-amber-900 group-hover:brightness-110 shrink-0 hidden sm:flex">
+              <div class="w-5 h-1 bg-amber-950/70 rounded-full"></div>
+            </div>
+          </button>
+
+          <!-- Drawer 2 -->
+          <button onclick="selectDrawer(2)" id="drawerTab2" class="drawer-wood-grain text-left p-3.5 px-4 rounded-xl flex items-center justify-between border border-amber-950/90 transition-all opacity-80 hover:opacity-100 group">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-500" id="tabDot2"></span>
+                <span class="text-[10px] uppercase tracking-wider font-mono font-bold text-amber-200/90">Drawer 02</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold text-amber-50 mt-0.5 truncate">Tools & Hardware</p>
+              <p class="text-[10px] text-amber-200/60 truncate">Clamps, Brushes, Tongs</p>
+            </div>
+            <div class="w-8 h-4 rounded bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 shadow-inner flex items-center justify-center border border-amber-900 group-hover:brightness-110 shrink-0 hidden sm:flex">
+              <div class="w-5 h-1 bg-amber-950/70 rounded-full"></div>
+            </div>
+          </button>
+
+          <!-- Drawer 3 -->
+          <button onclick="selectDrawer(3)" id="drawerTab3" class="drawer-wood-grain text-left p-3.5 px-4 rounded-xl flex items-center justify-between border border-amber-950/90 transition-all opacity-80 hover:opacity-100 group">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-500" id="tabDot3"></span>
+                <span class="text-[10px] uppercase tracking-wider font-mono font-bold text-amber-200/90">Drawer 03</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold text-amber-50 mt-0.5 truncate">Heating & Porcelain</p>
+              <p class="text-[10px] text-amber-200/60 truncate">Crucibles, Gauze, Dishes</p>
+            </div>
+            <div class="w-8 h-4 rounded bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 shadow-inner flex items-center justify-center border border-amber-900 group-hover:brightness-110 shrink-0 hidden sm:flex">
+              <div class="w-5 h-1 bg-amber-950/70 rounded-full"></div>
+            </div>
+          </button>
+
+          <!-- Benchtop Station -->
+          <button onclick="selectDrawer(4)" id="drawerTab4" class="benchtop-station text-left p-3.5 px-4 rounded-xl flex items-center justify-between border border-slate-700 transition-all opacity-80 hover:opacity-100 group">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+                <span class="text-[10px] uppercase tracking-wider font-mono font-bold text-teal-300">Lab Station</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold text-white mt-0.5 truncate">Out of the Drawer</p>
+              <p class="text-[10px] text-slate-400 truncate">Hot Hands, Stoppers, Burner, Scale</p>
+            </div>
+            <i class="fa-solid fa-microscope text-teal-400 text-sm hidden sm:block"></i>
+          </button>
+        </div>
+
+        <!-- OPEN DRAWER INTERIOR (Molded Foam Organizer) -->
+        <div class="bg-slate-950 border-2 border-amber-900/60 rounded-2xl p-4 sm:p-6 shadow-inner relative overflow-hidden">
+          
+          <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-box-archive text-amber-500" id="activeDrawerIcon"></i>
+              <h2 id="activeDrawerTitle" class="text-sm sm:text-base font-bold text-white tracking-wide">Drawer 01: Glassware & Vessels</h2>
+              <span id="activeDrawerSubtitle" class="text-xs text-slate-400 font-normal hidden md:inline">Holding, mixing, and measuring liquid volumes</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <span id="activeItemCount">6</span> items in tray
+            </div>
+          </div>
+
+          <!-- FOAM GRID -->
+          <div id="equipmentGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 min-h-[380px]">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Bottom Bench lip -->
+        <div class="h-3 bg-gradient-to-b from-slate-900 to-slate-950 rounded-b-2xl mt-2 border-t border-slate-800"></div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         QUIZ MODE SECTION
+         ========================================================= -->
+    <section id="quizSection" class="hidden flex-1 flex flex-col gap-5">
+      
+      <!-- Quiz Status Header -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="h-12 w-12 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl font-bold">
+            <i class="fa-solid fa-clipboard-question"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-white">Find in the Lab Drawer Challenge</h2>
+              <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700" id="quizQuestionTracker">Question 1 of 10</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Read the scenario, pick the correct drawer or station tab, and click the matching item.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+          <div class="text-right">
+            <p class="text-[10px] uppercase font-mono tracking-wider text-slate-400">Score</p>
+            <p class="text-2xl font-black text-white" id="quizScoreDisplay">0 <span class="text-xs text-slate-500 font-normal">pts</span></p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] uppercase font-mono tracking-wider text-slate-400">Streak</p>
+            <p class="text-2xl font-black text-amber-400 flex items-center justify-end gap-1">
+              <i class="fa-solid fa-fire text-amber-500 text-base"></i>
+              <span id="quizStreakDisplay">0</span>
+            </p>
+          </div>
+          <button onclick="restartQuiz()" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate-right"></i> Restart
+          </button>
+        </div>
+      </div>
+
+      <!-- ACTIVE QUIZ SCENARIO PROMPT -->
+      <div id="quizPromptBox" class="bg-gradient-to-r from-cyan-950/60 via-slate-900 to-indigo-950/60 border border-cyan-800/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div class="flex items-start gap-4">
+          <div class="p-3 bg-cyan-500/20 text-cyan-300 rounded-xl border border-cyan-500/30 text-lg shrink-0">
+            <i class="fa-solid fa-circle-question"></i>
+          </div>
+          <div class="flex-1">
+            <span class="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold" id="quizScenarioCategory">Slideshow Scenario</span>
+            <h3 class="text-lg sm:text-xl font-bold text-white mt-1 leading-snug" id="quizPromptText">Loading question...</h3>
+            <p class="text-xs text-slate-300 mt-2 flex items-center gap-1.5" id="quizPromptInstruction">
+              <i class="fa-solid fa-arrow-turn-down text-cyan-400"></i>
+              <span>Select a drawer or lab station below and click the piece of equipment!</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Feedback Alert -->
+        <div id="quizFeedbackBox" class="hidden mt-4 p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm">
+          <div class="flex items-start gap-3">
+            <i id="quizFeedbackIcon" class="fa-solid fa-circle-check text-xl mt-0.5"></i>
+            <div>
+              <p id="quizFeedbackHeadline" class="font-bold text-base"></p>
+              <p id="quizFeedbackDetail" class="text-xs opacity-90 mt-1 leading-relaxed"></p>
+            </div>
+          </div>
+          <button onclick="nextQuizQuestion()" id="quizNextBtn" class="px-4 py-2 bg-white text-slate-950 font-bold rounded-lg text-xs hover:bg-slate-200 transition shrink-0 shadow flex items-center gap-1.5 self-end sm:self-center">
+            <span>Next Question</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- WORKBENCH FOR QUIZ -->
+      <div class="lab-bench rounded-3xl border border-slate-800 p-4 sm:p-6 shadow-2xl relative">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+          <button onclick="selectDrawer(1)" id="quizDrawerTab1" class="drawer-wood-grain text-left p-3 px-3.5 rounded-xl flex items-center justify-between border border-amber-800/70 transition-all ring-2 ring-cyan-500">
+            <div>
+              <span class="text-[9px] uppercase font-mono font-bold text-amber-200/90">Drawer 01</span>
+              <p class="text-xs font-bold text-white">Glassware & Vessels</p>
+            </div>
+          </button>
+          <button onclick="selectDrawer(2)" id="quizDrawerTab2" class="drawer-wood-grain text-left p-3 px-3.5 rounded-xl flex items-center justify-between border border-amber-950/90 opacity-80 hover:opacity-100 transition-all">
+            <div>
+              <span class="text-[9px] uppercase font-mono font-bold text-amber-200/90">Drawer 02</span>
+              <p class="text-xs font-bold text-white">Tools & Hardware</p>
+            </div>
+          </button>
+          <button onclick="selectDrawer(3)" id="quizDrawerTab3" class="drawer-wood-grain text-left p-3 px-3.5 rounded-xl flex items-center justify-between border border-amber-950/90 opacity-80 hover:opacity-100 transition-all">
+            <div>
+              <span class="text-[9px] uppercase font-mono font-bold text-amber-200/90">Drawer 03</span>
+              <p class="text-xs font-bold text-white">Heating & Porcelain</p>
+            </div>
+          </button>
+          <button onclick="selectDrawer(4)" id="quizDrawerTab4" class="benchtop-station text-left p-3 px-3.5 rounded-xl flex items-center justify-between border border-slate-700 opacity-80 hover:opacity-100 transition-all">
+            <div>
+              <span class="text-[9px] uppercase font-mono font-bold text-teal-300">Lab Station</span>
+              <p class="text-xs font-bold text-white">Out of Drawer</p>
+            </div>
+          </button>
+        </div>
+
+        <div class="bg-slate-950 border-2 border-amber-900/60 rounded-2xl p-4 sm:p-5 shadow-inner">
+          <div id="quizEquipmentGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 min-h-[300px]">
+            <!-- Injected -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         ASSEMBLY / SETUP CHALLENGE SECTION
+         ========================================================= -->
+    <section id="assemblySection" class="hidden flex-1 flex flex-col gap-5">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-white">Lab Stand Assembly Challenge</h2>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-teal-950 text-teal-400 border border-teal-800">Mini-Game</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Pick a laboratory apparatus setup and click the required tools from your drawers to build it on the ring stand!</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="loadAssemblyTarget('filtration')" id="asmBtnFiltration" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-cyan-600 text-white">
+            Filtration Setup
+          </button>
+          <button onclick="loadAssemblyTarget('crucible')" id="asmBtnCrucible" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white">
+            Crucible Heating Setup
+          </button>
+          <button onclick="loadAssemblyTarget('beaker_heating')" id="asmBtnBeaker" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white">
+            Beaker Heating Setup
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Assembly Interactive Rig Stage -->
+        <div class="lg:col-span-2 lab-bench rounded-3xl border border-slate-800 p-6 flex flex-col items-center justify-center min-h-[420px] relative shadow-2xl">
+          <h3 class="text-sm font-mono text-cyan-400 uppercase tracking-wider mb-2" id="assemblyTargetTitle">Filtration System</h3>
+          <p class="text-xs text-slate-400 mb-6 text-center max-w-md" id="assemblyTargetDesc">Assemble a gravity filtration system using a Ring Stand, Iron Ring, Funnel, and Receiving Flask.</p>
+
+          <!-- RING STAND APPARATUS STAGE GRAPHIC -->
+          <div class="relative w-64 h-80 bg-slate-950/60 rounded-2xl border border-slate-800 flex items-center justify-center p-4" id="assemblyGraphicStage">
+            <!-- Injected SVG Assembly components -->
+          </div>
+
+          <div id="assemblyStatusMessage" class="mt-4 text-xs font-mono px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-400">
+            Click tools in your drawer to place them on the stand!
+          </div>
+        </div>
+
+        <!-- Tool Picker Drawer -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Available Equipment</h4>
+            <span class="text-[10px] text-slate-400" id="assemblyRequiredCount">0 / 4 placed</span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2.5 overflow-y-auto max-h-[360px] p-1" id="assemblyToolPicker">
+            <!-- Injected -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- EQUIPMENT INSPECTION MODAL (TRAY DIALOG) -->
+  <div id="itemModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-6 transition-all duration-300">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-950/70 border-b border-slate-800 p-4 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span class="text-xs font-mono uppercase tracking-wider text-slate-400" id="modalDrawerLabel">Drawer 01 • Glassware</span>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-5">
+        
+        <!-- Graphic Hero & Title -->
+        <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
+          <div class="w-32 h-32 bg-slate-900/90 rounded-2xl p-3 flex items-center justify-center border border-slate-700/50 shadow-inner shrink-0" id="modalIconContainer">
+            <!-- SVG inserted -->
+          </div>
+          <div class="text-center sm:text-left flex-1">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <h3 class="text-2xl font-black text-white" id="modalItemName">Beakers</h3>
+              <span id="modalAccuracyTag" class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800">NOT FOR MEASUREMENT</span>
+            </div>
+            <p class="text-xs text-amber-400 font-semibold mt-1" id="modalDrawerSizes">In your drawer: 250 mL, 400 mL, 600 mL</p>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed" id="modalShortDesc">Used for holding chemicals during mixing or heating.</p>
+          </div>
+        </div>
+
+        <!-- Slideshow Exact Info Box -->
+        <div class="bg-amber-950/30 border border-amber-800/40 rounded-xl p-4 flex items-start gap-3">
+          <i class="fa-solid fa-quote-left text-amber-400 text-base mt-0.5 shrink-0"></i>
+          <div>
+            <p class="text-[10px] font-bold text-amber-300 uppercase font-mono tracking-wider">Slideshow Lesson Note</p>
+            <p class="text-xs text-amber-100 mt-0.5 leading-relaxed font-sans" id="modalSlideshowNote">NOT FOR MEASUREMENT! Used for holding chemicals.</p>
+          </div>
+        </div>
+
+        <!-- 3 Feature Pillars -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-slate-950/50 border border-slate-800 p-3.5 rounded-xl">
+            <div class="flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+              <i class="fa-solid fa-bullseye"></i>
+              <span>Primary Lab Purpose</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed" id="modalPrimaryUse">Holding chemicals and general mixing.</p>
+          </div>
+
+          <div class="bg-slate-950/50 border border-slate-800 p-3.5 rounded-xl">
+            <div class="flex items-center gap-2 text-rose-400 text-xs font-bold uppercase tracking-wider">
+              <i class="fa-solid fa-shield-cat"></i>
+              <span>Crucial Safety Rule</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed" id="modalSafety">Always use Hot Hands or beaker tongs when handling hot glassware.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950/70 border-t border-slate-800 p-4 px-6 flex items-center justify-between">
+        <button onclick="testMeOnThisItem()" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs flex items-center gap-2 transition shadow">
+          <i class="fa-solid fa-feather-pointed"></i>
+          <span>Practice Quiz on This Item</span>
+        </button>
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs transition">
+          Done Exploring
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QUIZ RESULTS CELEBRATION MODAL -->
+  <div id="quizSummaryModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-3xl mb-4">
+        <i class="fa-solid fa-award"></i>
+      </div>
+      <h3 class="text-2xl font-black text-white">Lab Drawer Challenge Complete!</h3>
+      <p class="text-xs text-slate-400 mt-1">Great job reviewing your slideshow lab equipment!</p>
+
+      <div class="my-6 p-4 bg-slate-950 rounded-2xl border border-slate-800 grid grid-cols-2 gap-3 text-center">
+        <div>
+          <p class="text-xs text-slate-500 font-mono">FINAL SCORE</p>
+          <p class="text-3xl font-black text-white" id="summaryFinalScore">0</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-mono">ACCURACY</p>
+          <p class="text-3xl font-black text-cyan-400" id="summaryAccuracy">0%</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <button onclick="restartQuiz()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg shadow-cyan-500/20">
+          Try Again
+        </button>
+        <button onclick="switchMode('explore'); closeSummaryModal();" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition">
+          Return to Lab Drawers
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       AUDIO SYNTHESIS (Web Audio API)
+       ========================================================= */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      if (soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+        playSound('clink');
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark text-slate-600';
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'drawer') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.exponentialRampToValueAtTime(70, now + 0.16);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } else if (type === 'clink') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1900, now);
+        osc.frequency.exponentialRampToValueAtTime(2600, now + 0.05);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'correct') {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.05);
+          gain.gain.setValueAtTime(0.1, now + i * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.22);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + i * 0.05);
+          osc.stop(now + i * 0.05 + 0.23);
+        });
+      } else if (type === 'wrong') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.setValueAtTime(110, now + 0.1);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+
+    /* =========================================================
+       COMPLETE SLIDESHOW EQUIPMENT DATABASE (27 ITEMS)
+       ========================================================= */
+    const labEquipment = [
+      /* --- DRAWER 1: GLASSWARE & VESSELS --- */
+      {
+        id: 'beaker',
+        drawer: 1,
+        name: 'Beaker',
+        sizes: '250 mL, 400 mL, 600 mL, and more!',
+        tag: 'NOT FOR MEASUREMENT',
+        slideshowNote: 'Multiple sizes available. NOT FOR MEASUREMENT! Used primarily for holding chemicals.',
+        primaryUse: 'Holding and pouring liquid chemicals.',
+        safety: 'Always pick up hot beakers with Hot Hands or beaker tongs.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M22 20 L22 105 C22 112 30 114 50 114 C70 114 78 112 78 105 L78 20 L86 16 L22 16 Z" fill="rgba(147, 197, 253, 0.12)" stroke="#38bdf8" stroke-width="2.5"/>
+          <line x1="28" y1="90" x2="44" y2="90" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="28" y1="70" x2="52" y2="70" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="28" y1="50" x2="44" y2="50" stroke="#94a3b8" stroke-width="2"/>
+          <path d="M24 68 Q50 72 76 68 L76 104 C76 110 68 112 50 112 C32 112 24 110 24 104 Z" fill="rgba(56, 189, 248, 0.3)"/>
+        </svg>`
+      },
+      {
+        id: 'erlenmeyer_flask',
+        drawer: 1,
+        name: 'Erlenmeyer Flask',
+        sizes: 'In your drawer: 250 mL',
+        tag: 'NOT FOR MEASUREMENT',
+        slideshowNote: 'Multiple sizes. NOT FOR MEASUREMENT! Often used for mixing liquids without splashing.',
+        primaryUse: 'Mixing and swirling combinations of chemicals.',
+        safety: 'Never heat a flask that is sealed tight with a rubber stopper.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M42 16 L42 36 L18 102 C14 112 24 114 50 114 C76 114 86 112 82 102 L58 36 L58 16 Z" fill="rgba(147, 197, 253, 0.12)" stroke="#38bdf8" stroke-width="2.5"/>
+          <ellipse cx="50" cy="16" rx="9" ry="2.5" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+          <path d="M26 84 Q50 88 74 84 L80 102 C82 110 74 112 50 112 C26 112 18 110 20 102 Z" fill="rgba(168, 85, 247, 0.3)"/>
+        </svg>`
+      },
+      {
+        id: 'graduated_cylinder',
+        drawer: 1,
+        name: 'Graduated Cylinder',
+        sizes: 'In your drawer: 10 mL, 25 mL, 50 mL',
+        tag: 'USED FOR MEASURING LIQUIDS',
+        slideshowNote: 'Multiple sizes. Used for measuring liquids! Units are in mL (volume). Always read the meniscus at eye level!',
+        primaryUse: 'Accurate liquid volume measurements in mL.',
+        safety: 'Keep plastic bumper rings near the top rim to prevent breakage if tipped.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <polygon points="28,112 72,112 64,102 36,102" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+          <rect x="38" y="16" width="24" height="88" fill="rgba(147, 197, 253, 0.15)" stroke="#38bdf8" stroke-width="2.2"/>
+          <line x1="40" y1="28" x2="52" y2="28" stroke="#f1f5f9" stroke-width="1.5"/>
+          <line x1="40" y1="44" x2="52" y2="44" stroke="#f1f5f9" stroke-width="1.5"/>
+          <line x1="40" y1="60" x2="52" y2="60" stroke="#f1f5f9" stroke-width="1.5"/>
+          <path d="M39 52 Q50 56 61 52 L61 102 L39 102 Z" fill="rgba(56, 189, 248, 0.35)"/>
+        </svg>`
+      },
+      {
+        id: 'test_tubes',
+        drawer: 1,
+        name: 'Test Tubes',
+        sizes: 'In your drawer: 6 of them!',
+        tag: 'QUALITATIVE REACTIONS',
+        slideshowNote: 'Holds chemicals during heating or reactions. In your drawer: 6 of them!',
+        primaryUse: 'Conducting small-scale chemical reactions or testing color changes.',
+        safety: 'Always hold with a test tube clamp when heating over an open flame.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <rect x="28" y="18" width="14" height="74" rx="7" fill="rgba(147, 197, 253, 0.15)" stroke="#38bdf8" stroke-width="2"/>
+          <path d="M30 65 L40 65 L40 85 C40 89 30 89 30 85 Z" fill="rgba(34, 197, 94, 0.35)"/>
+          <rect x="56" y="24" width="14" height="68" rx="7" fill="rgba(147, 197, 253, 0.15)" stroke="#38bdf8" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'watch_glass',
+        drawer: 1,
+        name: 'Watch Glass',
+        sizes: 'Small, Medium, Large',
+        tag: 'BEAKER COVER / EVAPORATION',
+        slideshowNote: 'Used as a beaker cover. Place small amounts of chemicals on it and then heat it.',
+        primaryUse: 'Covering beakers or holding small solid samples for observation/heating.',
+        safety: 'Do not heat intensely directly over open flames to prevent thermal shock.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <ellipse cx="50" cy="65" rx="42" ry="18" fill="rgba(147, 197, 253, 0.18)" stroke="#38bdf8" stroke-width="2.5"/>
+          <ellipse cx="50" cy="67" rx="34" ry="12" fill="none" stroke="#94a3b8" stroke-dasharray="3 3"/>
+        </svg>`
+      },
+      {
+        id: 'glass_plate',
+        drawer: 1,
+        name: 'Glass Plate',
+        sizes: 'Flat Glass Square',
+        tag: 'FLASK & BEAKER COVER',
+        slideshowNote: 'Used as a cover for flasks, beakers, etc. to prevent contamination.',
+        primaryUse: 'Covering open glassware containers.',
+        safety: 'Inspect edges for sharp glass chips before handling.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <polygon points="20,40 80,40 70,80 10,80" fill="rgba(147, 197, 253, 0.2)" stroke="#38bdf8" stroke-width="2"/>
+        </svg>`
+      },
+
+      /* --- DRAWER 2: TOOLS & SMALL HARDWARE --- */
+      {
+        id: 'test_tube_clamp',
+        drawer: 2,
+        name: 'Test Tube Clamp',
+        sizes: 'Standard Spring Metal Clamp',
+        tag: 'HEATING & HOLDING TUBE',
+        slideshowNote: 'Used to hold a test tube securely, especially while heating or holding hot test tubes over a flame. SAFETY RULE: Always point the open end/mouth of the test tube away from yourself and others, toward a wall or empty space when heating.',
+        primaryUse: 'Holding a test tube securely over a Bunsen burner flame or hot bath.',
+        safety: 'Always point the open mouth of the test tube away from yourself and others toward a wall when heating.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <!-- Glass Test Tube inside clamp -->
+          <rect x="58" y="10" width="16" height="85" rx="8" fill="rgba(147, 197, 253, 0.2)" stroke="#38bdf8" stroke-width="2"/>
+          <path d="M60 65 L72 65 L72 87 C72 91 60 91 60 87 Z" fill="rgba(56, 189, 248, 0.4)"/>
+          
+          <!-- Spring Loaded Metallic Clamp Body -->
+          <path d="M15 72 L32 72 C36 72 40 68 42 62 L52 46 C55 42 60 42 64 45 L72 50 C76 52 74 58 68 58 L54 58 L46 72 L32 72 Z" fill="#94a3b8" stroke="#cbd5e1" stroke-width="1.5"/>
+          <!-- Clamp jaws around tube -->
+          <path d="M50 42 C50 36 68 32 78 40 L76 48 C68 42 54 44 52 48 Z" fill="#64748b" stroke="#cbd5e1" stroke-width="1.5"/>
+          <!-- Finger grip spring loops -->
+          <circle cx="20" cy="72" r="6" fill="none" stroke="#f1f5f9" stroke-width="2.5"/>
+          <circle cx="28" cy="84" r="6" fill="none" stroke="#f1f5f9" stroke-width="2.5"/>
+          <path d="M22 78 L26 82" stroke="#f1f5f9" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'test_tube_brush',
+        drawer: 2,
+        name: 'Test Tube Brush',
+        sizes: 'Wire Handle Brush',
+        tag: 'CLEANING TOOL',
+        slideshowNote: 'Used for cleaning test tubes. DO NOT SHOVE PAPER TOWELS INTO THE TEST TUBES TO CLEAN THEM!',
+        primaryUse: 'Scrubbing residue from inside narrow glass test tubes.',
+        safety: 'Never force paper towels into test tubes—they get stuck!',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <line x1="50" y1="110" x2="50" y2="25" stroke="#94a3b8" stroke-width="3"/>
+          <circle cx="50" cy="110" r="6" fill="none" stroke="#94a3b8" stroke-width="2"/>
+          <path d="M30 30 L70 30 M25 40 L75 40 M25 50 L75 50 M30 60 L70 60" stroke="#f1f5f9" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'test_tube_rack',
+        drawer: 2,
+        name: 'Test Tube Rack',
+        sizes: 'Holds 6+ tubes',
+        tag: 'ORGANIZATION / MULTITASKING',
+        slideshowNote: 'Multiple designs available. Holds multiple test tubes at once—helpful for multitasking!',
+        primaryUse: 'Keeping test tubes upright on the lab bench.',
+        safety: 'Ensure tubes are placed securely in holes so they do not tip.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <rect x="15" y="40" width="70" height="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+          <rect x="15" y="80" width="70" height="10" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="22" y1="48" x2="22" y2="80" stroke="#94a3b8" stroke-width="3"/>
+          <line x1="78" y1="48" x2="78" y2="80" stroke="#94a3b8" stroke-width="3"/>
+        </svg>`
+      },
+      {
+        id: 'glass_stir_rod',
+        drawer: 2,
+        name: 'Glass Stir Rod',
+        sizes: 'Solid Glass Rod',
+        tag: 'STIRRING & DECANTATION',
+        slideshowNote: 'Used to stir combinations of chemicals. Can use it for DECANTING (separating solids from liquids in a mixture).',
+        primaryUse: 'Stirring solutions and guiding liquid pouring during decantation.',
+        safety: 'Do not tap hard against thin beaker bottoms.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <line x1="30" y1="105" x2="75" y2="15" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+          <line x1="30" y1="105" x2="75" y2="15" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+        </svg>`
+      },
+      {
+        id: 'scoopula',
+        drawer: 2,
+        name: 'Scoopula',
+        sizes: 'Stainless Steel Trough',
+        tag: 'CHEMICAL TRANSFER',
+        slideshowNote: 'Used to transfer chemicals. Must be washed between using for different chemicals to avoid contamination!',
+        primaryUse: 'Scooping solid chemicals from reagent jars onto weighing paper.',
+        safety: 'Wash and wipe completely dry between chemicals to prevent cross-contamination.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M26 102 L70 24 C72 20 78 20 80 24 L76 34 L32 108 Z" fill="#94a3b8" stroke="#f1f5f9" stroke-width="1.8"/>
+        </svg>`
+      },
+      {
+        id: 'forceps',
+        drawer: 2,
+        name: 'Forceps',
+        sizes: 'Big Tweezers',
+        tag: 'PICK UP SMALL ITEMS',
+        slideshowNote: 'Used to pick up small items in the laboratory. Think of them as big metal tweezers!',
+        primaryUse: 'Grasping small solids, filter paper, or zinc buttons.',
+        safety: 'Do not use as a substitute for hot crucible tongs.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M45 15 L35 105 M55 15 L65 105" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+          <path d="M45 15 Q50 10 55 15" fill="none" stroke="#cbd5e1" stroke-width="3"/>
+        </svg>`
+      },
+      {
+        id: 'crucible_tongs',
+        drawer: 2,
+        name: 'Crucible Tongs',
+        sizes: 'Metals Scissor Tongs',
+        tag: 'HOT CRUCIBLE HANDLING',
+        slideshowNote: 'Used to pick up and hold many items (usually HOT items!). Works best with a crucible.',
+        primaryUse: 'Grasping hot ceramic crucibles and lids.',
+        safety: 'Do not use on beakers—use rubber-jawed beaker tongs or Hot Hands instead!',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <circle cx="30" cy="100" r="8" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+          <circle cx="70" cy="100" r="8" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+          <line x1="34" y1="92" x2="65" y2="35" stroke="#cbd5e1" stroke-width="2.5"/>
+          <line x1="66" y1="92" x2="35" y2="35" stroke="#cbd5e1" stroke-width="2.5"/>
+          <path d="M35 35 Q40 20 28 15" fill="none" stroke="#cbd5e1" stroke-width="2.5"/>
+          <path d="M65 35 Q60 20 72 15" fill="none" stroke="#cbd5e1" stroke-width="2.5"/>
+        </svg>`
+      },
+      {
+        id: 'funnel',
+        drawer: 2,
+        name: 'Funnel',
+        sizes: 'Plastic or Glass',
+        tag: 'FILTERING & POURING',
+        slideshowNote: 'Used with filter paper to remove undissolved solids from liquid mixtures. Helps pour liquid into small openings cleanly.',
+        primaryUse: 'Gravity filtration and pour transfers into narrow neck containers.',
+        safety: 'Wet filter paper slightly so it clings tightly to funnel cone sides.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <polygon points="20,24 80,24 53,74 47,74" fill="rgba(147, 197, 253, 0.15)" stroke="#38bdf8" stroke-width="2.5"/>
+          <polygon points="47,74 53,74 51,114 47,114" fill="rgba(147, 197, 253, 0.15)" stroke="#38bdf8" stroke-width="2"/>
+        </svg>`
+      },
+
+      /* --- DRAWER 3: HEATING & PORCELAIN --- */
+      {
+        id: 'evaporating_dish',
+        drawer: 3,
+        name: 'Evaporating Dish',
+        sizes: 'Porcelain Bowl with Spout',
+        tag: 'EVAPORATING LIQUIDS',
+        slideshowNote: 'A porcelain container used for heating to evaporate liquid solvent from chemical solutions.',
+        primaryUse: 'Heating solutions until liquid evaporates, leaving dry solid crystals.',
+        safety: 'Porcelain stays extremely hot long after removing from flame.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M20 50 C20 90 35 95 50 95 C65 95 80 90 80 50 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2.5"/>
+          <ellipse cx="50" cy="50" rx="30" ry="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+        </svg>`
+      },
+      {
+        id: 'crucible_cover',
+        drawer: 3,
+        name: 'Crucible & Cover',
+        sizes: 'High-Temp Porcelain',
+        tag: 'VERY HOT HEATING (KEEPS O2 OUT)',
+        slideshowNote: 'A container for VERY HOT heating specifically. The fitted cover keeps oxygen out during thermal decomposition!',
+        primaryUse: 'Heating dry solids over direct extreme flame.',
+        safety: 'Handle only with crucible tongs when hot.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <circle cx="50" cy="40" r="3.5" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+          <path d="M30 48 Q50 44 70 48 L68 53 L32 53 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+          <path d="M32 56 L38 98 C38 106 44 110 50 110 C56 110 62 106 62 98 L68 56 Z" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'clay_triangle',
+        drawer: 3,
+        name: 'Clay Triangle',
+        sizes: 'Wire & Ceramic Flutes',
+        tag: 'SUPPORTS CRUCIBLE',
+        slideshowNote: 'Used to support a crucible during heating on a ring stand.',
+        primaryUse: 'Holding a porcelain crucible securely over a ring clamp flame.',
+        safety: 'Inspect ceramic tubes for cracks before placing crucibles.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <polygon points="50,25 20,80 80,80" fill="none" stroke="#d97706" stroke-width="4"/>
+          <circle cx="50" cy="25" r="4" fill="#cbd5e1"/>
+          <circle cx="20" cy="80" r="4" fill="#cbd5e1"/>
+          <circle cx="80" cy="80" r="4" fill="#cbd5e1"/>
+        </svg>`
+      },
+      {
+        id: 'wire_gauze',
+        drawer: 3,
+        name: 'Wire Gauze',
+        sizes: 'Ceramic Centered Mesh',
+        tag: 'SPREADS HEAT EVENLY',
+        slideshowNote: 'Used to support a container (such as a beaker or flask) during heating. Helps to spread the flame and heat out evenly!',
+        primaryUse: 'Distributing burner flame heat evenly across flat glass bottoms.',
+        safety: 'Allow mesh to cool completely before touching with bare hands.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <rect x="20" y="35" width="60" height="50" fill="rgba(148, 163, 184, 0.2)" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 3"/>
+          <circle cx="50" cy="60" r="18" fill="#e2e8f0" opacity="0.7"/>
+        </svg>`
+      },
+
+      /* --- LAB STATION: OUT OF THE DRAWER --- */
+      {
+        id: 'rubber_stopper',
+        drawer: 4,
+        name: 'Rubber Stopper',
+        sizes: 'Solid & Hole variants',
+        tag: 'TEST TUBE / FLASK PLUG',
+        slideshowNote: 'A stopper with no holes is used as a plug for a test tube or flask. Some stoppers have holes so a piece of tubing can be inserted.',
+        primaryUse: 'Sealing flasks/tubes to prevent gas or liquid leakage.',
+        safety: 'Never heat a sealed glass container tight with a stopper!',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <polygon points="30,40 70,40 62,80 38,80" fill="#334155" stroke="#64748b" stroke-width="2"/>
+          <circle cx="44" cy="55" r="3" fill="#0f172a"/>
+          <circle cx="56" cy="55" r="3" fill="#0f172a"/>
+        </svg>`
+      },
+      {
+        id: 'hot_hands',
+        drawer: 4,
+        name: 'Hot Hands',
+        sizes: 'Silicone Grippers',
+        tag: 'HOT GLASS LOOKS LIKE COLD GLASS',
+        slideshowNote: 'Used to pick up hot glassware. SAFETY WARNING: YOU CANNOT TELL IF GLASS IS HOT! Hot glass looks the same as cold glass!',
+        primaryUse: 'Safely grabbing hot beakers or flasks directly off hot plates.',
+        safety: 'Always assume glassware near flames or hotplates is burning hot!',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M30 30 C20 40 20 80 35 90 C50 100 70 90 70 70 C70 50 60 30 30 30 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+          <line x1="35" y1="45" x2="55" y2="75" stroke="#b91c1c" stroke-width="3"/>
+        </svg>`
+      },
+      {
+        id: 'bunsen_burner',
+        drawer: 4,
+        name: 'Bunsen Burner',
+        sizes: 'Natural Gas Burner',
+        tag: 'HEAT SOURCE / INNER CONE',
+        slideshowNote: 'Uses natural gas to heat things. Note the hottest point is the inner flame cone! Takes in air and gas.',
+        primaryUse: 'Open flame heat source for chemical reactions.',
+        safety: 'Tie long hair back and check gas hose for cracks before lighting.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M50 12 Q58 32 50 48 Q42 32 50 12 Z" fill="#38bdf8" opacity="0.9"/>
+          <path d="M50 24 Q54 36 50 48 Q46 36 50 24 Z" fill="#67e8f9"/>
+          <rect x="45" y="48" width="10" height="42" fill="#64748b" stroke="#cbd5e1" stroke-width="2"/>
+          <polygon points="28,114 72,114 62,98 38,98" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'thermometer',
+        drawer: 4,
+        name: 'Thermometer',
+        sizes: 'Celsius Scale (°C)',
+        tag: 'RED ANTI-ROLL RING',
+        slideshowNote: 'Used to measure temperature in Celsius. The red ring near the top prevents it from rolling off the table!',
+        primaryUse: 'Measuring liquid temperature in °C.',
+        safety: 'Never use a thermometer as a stir rod.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <rect x="47" y="15" width="6" height="90" rx="3" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+          <circle cx="50" cy="98" r="8" fill="#ef4444"/>
+          <rect x="49" y="30" width="2" height="65" fill="#ef4444"/>
+          <circle cx="50" cy="25" r="6" fill="none" stroke="#ef4444" stroke-width="3"/>
+        </svg>`
+      },
+      {
+        id: 'ring_stand',
+        drawer: 4,
+        name: 'Ring Stand',
+        sizes: 'Heavy Base + Upright Rod',
+        tag: 'APPARATUS SUPPORT',
+        slideshowNote: 'A metal stand consisting of a long upright rod attached to a heavy rectangular base used with rings and clamps.',
+        primaryUse: 'Supporting heating, filtration, and titration setups.',
+        safety: 'Keep heavy base centered on bench so setup does not tip.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <rect x="25" y="100" width="50" height="10" rx="2" fill="#334155" stroke="#64748b" stroke-width="2"/>
+          <rect x="48" y="15" width="4" height="85" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1"/>
+        </svg>`
+      },
+      {
+        id: 'ring_clamp',
+        drawer: 4,
+        name: 'Ring Clamp / Iron Ring',
+        sizes: 'Attachable Circular Ring',
+        tag: 'HOLDS FUNNEL / WIRE GAUZE',
+        slideshowNote: 'Attached to the ring stand and used as a support. Used to hold a funnel during filtering or wire gauze during heating.',
+        primaryUse: 'Supporting funnels or heating platforms on ring stand.',
+        safety: 'Tighten clamp knob firmly onto rod before placing glassware.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <circle cx="55" cy="50" r="22" fill="none" stroke="#475569" stroke-width="4"/>
+          <rect x="20" y="47" width="15" height="6" fill="#64748b"/>
+        </svg>`
+      },
+      {
+        id: 'utility_clamp',
+        drawer: 4,
+        name: 'Utility Clamp',
+        sizes: 'Adjustable Jaw Clamp',
+        tag: 'STABILIZES FLASKS / TUBES',
+        slideshowNote: 'Attached to the ring stand and used to stabilize other items like test tubes or Erlenmeyer flasks.',
+        primaryUse: 'Holding flasks and test tubes securely above bench level.',
+        safety: 'Do not over-tighten metal jaws directly onto glass.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M20 60 L60 60" stroke="#64748b" stroke-width="4"/>
+          <path d="M60 50 L80 40 M60 70 L80 80" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: 'goggles',
+        drawer: 4,
+        name: 'Safety Goggles',
+        sizes: 'Universal Fit',
+        tag: 'WEAR AT ALL TIMES IN LAB',
+        slideshowNote: 'Used to protect your eyes from broken glass, chemicals, and flames. You MUST wear them during labs AT ALL TIMES!',
+        primaryUse: 'Eye protection against chemical splashes and impact.',
+        safety: 'Never take goggles off until all lab chemicals are put away!',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <path d="M20 50 Q50 35 80 50 Q85 70 50 75 Q15 70 20 50 Z" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="3"/>
+          <circle cx="35" cy="58" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+          <circle cx="65" cy="58" r="10" fill="none" stroke="#fff" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'balance',
+        drawer: 4,
+        name: 'Electronic Balance',
+        sizes: 'Digital Scale (grams)',
+        tag: 'NO CHEMICALS DIRECTLY ON METAL!',
+        slideshowNote: 'Used for measuring chemicals\' masses in units of grams. DO NOT PUT CHEMICALS DIRECTLY ON THE METAL PAN!',
+        primaryUse: 'Measuring chemical mass in grams (g).',
+        safety: 'Always weigh chemicals on a weigh boat or watch glass, never directly on the scale metal pan.',
+        svg: `<svg viewBox="0 0 100 120" class="w-16 h-20 mx-auto equipment-svg">
+          <rect x="20" y="60" width="60" height="35" rx="5" fill="#334155" stroke="#64748b" stroke-width="2"/>
+          <rect x="30" y="50" width="40" height="10" fill="#94a3b8" stroke="#cbd5e1" stroke-width="1.5"/>
+          <rect x="35" y="72" width="30" height="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+          <text x="50" y="81" font-size="8" fill="#38bdf8" text-anchor="middle" font-family="monospace">12.50g</text>
+        </svg>`
+      }
+    ];
+
+    /* =========================================================
+       SLIDESHOW SPECIFIC QUIZ QUESTION DATABASE
+       ========================================================= */
+    const quizQuestions = [
+      {
+        id: 'q1',
+        category: 'Volume Measurement Rule',
+        prompt: 'You need to accurately measure 35 mL of liquid for a reaction. Should you reach for a beaker or a graduated cylinder?',
+        correctEquipmentId: 'graduated_cylinder',
+        targetDrawer: 1,
+        explanation: 'As stressed in the slideshow, Beakers are NOT FOR MEASUREMENT! Graduated cylinders are designed for measuring liquid volume in mL.'
+      },
+      {
+        id: 'q2',
+        category: 'Test Tube Heating Safety',
+        prompt: 'You are heating a liquid in a test tube. Which tool holds the tube, and where MUST the open mouth point?',
+        correctEquipmentId: 'test_tube_clamp',
+        targetDrawer: 2,
+        explanation: 'Use a Test Tube Clamp! Always point the open mouth towards a wall and away from yourself and others when heating.'
+      },
+      {
+        id: 'q3',
+        category: 'Hot Glass Safety Rule',
+        prompt: 'A beaker has been sitting on a hotplate. You need to move it. What tool found in the Out of Drawer section should you wear/use?',
+        correctEquipmentId: 'hot_hands',
+        targetDrawer: 4,
+        explanation: 'Use Hot Hands located on the station benchtop! Hot glass looks EXACTLY the same as cold glass—you cannot tell by looking!'
+      },
+      {
+        id: 'q4',
+        category: 'Test Tube Cleaning Rule',
+        prompt: 'You just finished a test tube reaction and need to clean residue out of the bottom. What tool do you use?',
+        correctEquipmentId: 'test_tube_brush',
+        targetDrawer: 2,
+        explanation: 'Use a Test Tube Brush! NEVER shove paper towels inside test tubes to clean them.'
+      },
+      {
+        id: 'q5',
+        category: 'Electronic Balance Rule',
+        prompt: 'You need to measure out 5.0 grams of sodium chloride crystals on the electronic balance. Where do the crystals go?',
+        correctEquipmentId: 'balance',
+        targetDrawer: 4,
+        explanation: 'Use the balance, but NEVER put chemicals directly on the metal pan! Place them on weigh paper or a watch glass.'
+      },
+      {
+        id: 'q6',
+        category: 'Extreme Porcelain Heating',
+        prompt: 'You need to heat a solid chemical at VERY high temperatures while keeping oxygen OUT of the container. What do you use?',
+        correctEquipmentId: 'crucible_cover',
+        targetDrawer: 3,
+        explanation: 'A porcelain Crucible with its fitted cover keeps oxygen out during intense heating!'
+      },
+      {
+        id: 'q7',
+        category: 'Decanting Mixtures',
+        prompt: 'You want to carefully pour off the liquid from a beaker while leaving settled sand behind (decanting). What tool guides the liquid?',
+        correctEquipmentId: 'glass_stir_rod',
+        targetDrawer: 2,
+        explanation: 'A Glass Stir Rod is used for stirring and for guiding liquid during decantation.'
+      },
+      {
+        id: 'q8',
+        category: 'Eye Protection Rule',
+        prompt: 'When entering the lab, what item MUST you put on and keep on AT ALL TIMES during experiments?',
+        correctEquipmentId: 'goggles',
+        targetDrawer: 4,
+        explanation: 'Safety Goggles protect your eyes from broken glass, chemicals, and flames. You MUST wear them at all times!'
+      },
+      {
+        id: 'q9',
+        category: 'Even Heat Distribution',
+        prompt: 'You are heating a glass beaker on a ring stand over a Bunsen burner flame. What item goes under the beaker to spread heat evenly?',
+        correctEquipmentId: 'wire_gauze',
+        targetDrawer: 3,
+        explanation: 'Wire Gauze sits on the iron ring under a beaker to spread the flame and heat out evenly.'
+      },
+      {
+        id: 'q10',
+        category: 'Thermometer Safety Feature',
+        prompt: 'What piece of lab equipment features a small red ring near the top specifically to prevent it from rolling off the lab bench?',
+        correctEquipmentId: 'thermometer',
+        targetDrawer: 4,
+        explanation: 'The lab Thermometer has a red anti-roll ring near the top to prevent rolling and breaking!'
+      }
+    ];
+
+    /* =========================================================
+       ASSEMBLY CHALLENGE SETUPS
+       ========================================================= */
+    const assemblySetups = {
+      filtration: {
+        title: 'Gravity Filtration Assembly',
+        desc: 'Place the Ring Stand, Iron Ring, Funnel, and Erlenmeyer Flask in correct order.',
+        required: ['ring_stand', 'ring_clamp', 'funnel', 'erlenmeyer_flask']
+      },
+      crucible: {
+        title: 'Crucible High-Heat Assembly',
+        desc: 'Construct a crucible heating rig using Ring Stand, Iron Ring, Clay Triangle, and Crucible.',
+        required: ['ring_stand', 'ring_clamp', 'clay_triangle', 'crucible_cover']
+      },
+      beaker_heating: {
+        title: 'Beaker Heating Assembly',
+        desc: 'Set up a beaker burner rig using Ring Stand, Iron Ring, Wire Gauze, and Beaker.',
+        required: ['ring_stand', 'ring_clamp', 'wire_gauze', 'beaker']
+      }
+    };
+
+    /* STATE CONTROLLERS */
+    let currentDrawer = 1;
+    let currentMode = 'explore';
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+    let quizStreak = 0;
+    let quizAnswered = false;
+    let activeAssemblyKey = 'filtration';
+    let assembledItems = [];
+
+    /* INITIALIZATION */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDrawerGrid(1);
+      renderAssemblyPicker();
+    });
+
+    /* MODE SWITCHER */
+    function switchMode(mode) {
+      currentMode = mode;
+      const exploreSec = document.getElementById('exploreSection');
+      const quizSec = document.getElementById('quizSection');
+      const asmSec = document.getElementById('assemblySection');
+
+      const exploreBtn = document.getElementById('modeExploreBtn');
+      const quizBtn = document.getElementById('modeQuizBtn');
+      const asmBtn = document.getElementById('modeAssemblyBtn');
+
+      exploreSec.classList.add('hidden');
+      quizSec.classList.add('hidden');
+      asmSec.classList.add('hidden');
+
+      exploreBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition text-slate-400 hover:text-slate-200';
+      quizBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition text-slate-400 hover:text-slate-200';
+      asmBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition text-slate-400 hover:text-slate-200';
+
+      if (mode === 'explore') {
+        exploreSec.classList.remove('hidden');
+        exploreBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition bg-cyan-600 text-white shadow';
+        selectDrawer(currentDrawer);
+      } else if (mode === 'quiz') {
+        quizSec.classList.remove('hidden');
+        quizBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition bg-amber-600 text-white shadow';
+        loadQuizQuestion(currentQuizIndex);
+      } else if (mode === 'assembly') {
+        asmSec.classList.remove('hidden');
+        asmBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition bg-teal-600 text-white shadow';
+        loadAssemblyTarget(activeAssemblyKey);
+      }
+      playSound('drawer');
+    }
+
+    /* DRAWER SELECTION */
+    function selectDrawer(drawerNum) {
+      currentDrawer = drawerNum;
+      playSound('drawer');
+
+      // Update pull button UI styling
+      for (let i = 1; i <= 4; i++) {
+        const tab = document.getElementById(`drawerTab${i}`);
+        const quizTab = document.getElementById(`quizDrawerTab${i}`);
+        const isSelected = (i === drawerNum);
+
+        if (tab) {
+          if (isSelected) {
+            tab.classList.add('ring-2', 'ring-cyan-500', 'shadow-cyan-950/40');
+            tab.classList.remove('opacity-80');
+          } else {
+            tab.classList.remove('ring-2', 'ring-cyan-500', 'shadow-cyan-950/40');
+            tab.classList.add('opacity-80');
+          }
+        }
+
+        if (quizTab) {
+          if (isSelected) {
+            quizTab.classList.add('ring-2', 'ring-cyan-500');
+            quizTab.classList.remove('opacity-80');
+          } else {
+            quizTab.classList.remove('ring-2', 'ring-cyan-500');
+            quizTab.classList.add('opacity-80');
+          }
+        }
+      }
+
+      const titles = [
+        'Drawer 01: Glassware & Vessels',
+        'Drawer 02: Tools & Hardware',
+        'Drawer 03: Heating & Porcelain',
+        'Lab Station: Out of the Drawer'
+      ];
+      const subtitles = [
+        'Holding, mixing, and measuring liquid volumes',
+        'Clamps, cleaning brushes, tongs, and stoppers',
+        'Crucibles, evaporating dishes, and wire gauze',
+        'Burner, ring stand, electronic balance, and goggles'
+      ];
+
+      document.getElementById('activeDrawerTitle').textContent = titles[drawerNum - 1];
+      document.getElementById('activeDrawerSubtitle').textContent = subtitles[drawerNum - 1];
+
+      renderDrawerGrid(drawerNum);
+    }
+
+    function renderDrawerGrid(drawerNum) {
+      const targetGrid = (currentMode === 'explore') ? document.getElementById('equipmentGrid') : document.getElementById('quizEquipmentGrid');
+      targetGrid.innerHTML = '';
+
+      const items = labEquipment.filter(item => item.drawer === drawerNum);
+      document.getElementById('activeItemCount').textContent = items.length;
+
+      items.forEach(item => {
+        const itemCard = document.createElement('div');
+        itemCard.className = `foam-cutout rounded-2xl p-3.5 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 item-hover-glow relative group`;
+        itemCard.setAttribute('data-id', item.id);
+
+        if (currentMode === 'explore') {
+          itemCard.onclick = () => openItemModal(item.id);
+        } else {
+          itemCard.onclick = () => submitQuizAnswer(item.id, itemCard);
+        }
+
+        itemCard.innerHTML = `
+          <div class="absolute inset-1.5 rounded-xl border border-dashed border-slate-800/80 pointer-events-none"></div>
+          <span class="text-[9px] font-mono tracking-wider text-slate-500 uppercase z-10 truncate max-w-full">${item.sizes ? item.sizes.split(',')[0] : ''}</span>
+          
+          <div class="py-2 z-10 w-full flex items-center justify-center">
+            ${item.svg}
+          </div>
+
+          <div class="z-10 w-full">
+            <h4 class="text-xs font-bold text-slate-100 group-hover:text-cyan-400 transition-colors truncate">${item.name}</h4>
+            <span class="text-[9px] text-amber-400 block truncate font-mono mt-0.5">${item.tag}</span>
+          </div>
+
+          <div class="mt-2 text-[9px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold group-hover:bg-cyan-950 group-hover:text-cyan-300 border border-slate-700 z-10 transition">
+            ${currentMode === 'explore' ? 'Inspect' : 'Select'}
+          </div>
+        `;
+
+        targetGrid.appendChild(itemCard);
+      });
+    }
+
+    /* SEARCH FILTER */
+    function handleSearch() {
+      const query = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+      const grid = document.getElementById('equipmentGrid');
+
+      if (!query) {
+        renderDrawerGrid(currentDrawer);
+        return;
+      }
+
+      grid.innerHTML = '';
+      const matches = labEquipment.filter(item => 
+        item.name.toLowerCase().includes(query) || 
+        item.slideshowNote.toLowerCase().includes(query) ||
+        item.tag.toLowerCase().includes(query) ||
+        item.primaryUse.toLowerCase().includes(query)
+      );
+
+      document.getElementById('activeDrawerTitle').textContent = `Search Results: "${query}"`;
+      document.getElementById('activeDrawerSubtitle').textContent = `Found ${matches.length} matching lab items across all drawers`;
+      document.getElementById('activeItemCount').textContent = matches.length;
+
+      if (matches.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400">
+            <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-slate-600"></i>
+            <p class="text-sm font-semibold text-slate-300">No equipment found</p>
+            <p class="text-xs text-slate-500">Try "beaker", "bad barbie", "goggles", or "measuring".</p>
+          </div>
+        `;
+        return;
+      }
+
+      matches.forEach(item => {
+        const itemCard = document.createElement('div');
+        itemCard.className = `foam-cutout rounded-2xl p-3.5 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 item-hover-glow relative group`;
+        itemCard.onclick = () => openItemModal(item.id);
+        itemCard.innerHTML = `
+          <span class="text-[9px] font-mono tracking-wider text-cyan-400 uppercase z-10">Drawer 0${item.drawer}</span>
+          <div class="py-2 z-10 w-full flex items-center justify-center">${item.svg}</div>
+          <div class="z-10 w-full">
+            <h4 class="text-xs font-bold text-slate-100 group-hover:text-cyan-400 transition-colors">${item.name}</h4>
+            <span class="text-[9px] text-amber-400 block truncate font-mono mt-0.5">${item.tag}</span>
+          </div>
+        `;
+        grid.appendChild(itemCard);
+      });
+    }
+
+    function resetDrawerFilter() {
+      document.getElementById('equipmentSearch').value = '';
+      selectDrawer(currentDrawer);
+    }
+
+    /* MODAL INSPECTOR */
+    function openItemModal(itemId) {
+      const item = labEquipment.find(i => i.id === itemId);
+      if (!item) return;
+
+      playSound('clink');
+
+      const drawerNames = ['Glassware & Vessels', 'Tools & Hardware', 'Heating & Porcelain', 'Lab Station (Out of Drawer)'];
+      document.getElementById('modalDrawerLabel').textContent = `Drawer 0${item.drawer} • ${drawerNames[item.drawer - 1]}`;
+      document.getElementById('modalItemName').textContent = item.name;
+      document.getElementById('modalAccuracyTag').textContent = item.tag;
+      document.getElementById('modalDrawerSizes').textContent = item.sizes ? `Sizes / Qty: ${item.sizes}` : '';
+      document.getElementById('modalShortDesc').textContent = item.primaryUse;
+      document.getElementById('modalSlideshowNote').textContent = item.slideshowNote;
+      document.getElementById('modalPrimaryUse').textContent = item.primaryUse;
+      document.getElementById('modalSafety').textContent = item.safety;
+      document.getElementById('modalIconContainer').innerHTML = item.svg;
+
+      document.getElementById('itemModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('itemModal').classList.add('hidden');
+    }
+
+    function testMeOnThisItem() {
+      closeModal();
+      switchMode('quiz');
+    }
+
+    /* QUIZ ENGINE */
+    function loadQuizQuestion(index) {
+      if (index >= quizQuestions.length) {
+        showQuizSummary();
+        return;
+      }
+
+      quizAnswered = false;
+      const q = quizQuestions[index];
+
+      document.getElementById('quizQuestionTracker').textContent = `Question ${index + 1} of ${quizQuestions.length}`;
+      document.getElementById('quizScenarioCategory').textContent = q.category;
+      document.getElementById('quizPromptText').textContent = q.prompt;
+      document.getElementById('quizFeedbackBox').classList.add('hidden');
+
+      renderDrawerGrid(currentDrawer);
+    }
+
+    function submitQuizAnswer(selectedId, cardElement) {
+      if (quizAnswered) return;
+
+      const currentQ = quizQuestions[currentQuizIndex];
+      const feedbackBox = document.getElementById('quizFeedbackBox');
+      const feedbackHeadline = document.getElementById('quizFeedbackHeadline');
+      const feedbackDetail = document.getElementById('quizFeedbackDetail');
+      const feedbackIcon = document.getElementById('quizFeedbackIcon');
+
+      quizAnswered = true;
+      feedbackBox.classList.remove('hidden');
+
+      if (selectedId === currentQ.correctEquipmentId) {
+        playSound('correct');
+        quizScore += 100 + (quizStreak * 20);
+        quizStreak += 1;
+
+        cardElement.classList.add('ring-4', 'ring-emerald-400', 'bg-emerald-950/50');
+        feedbackBox.className = 'mt-4 p-4 rounded-xl border border-emerald-600 bg-emerald-950/80 text-emerald-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm';
+        feedbackHeadline.textContent = 'Correct Equipment Selected!';
+        feedbackIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-xl mt-0.5';
+        feedbackDetail.textContent = currentQ.explanation;
+      } else {
+        playSound('wrong');
+        quizStreak = 0;
+
+        cardElement.classList.add('ring-4', 'ring-rose-500', 'bg-rose-950/50');
+        feedbackBox.className = 'mt-4 p-4 rounded-xl border border-rose-600 bg-rose-950/80 text-rose-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm';
+        
+        const chosenItem = labEquipment.find(i => i.id === selectedId);
+        const correctItem = labEquipment.find(i => i.id === currentQ.correctEquipmentId);
+        
+        feedbackHeadline.textContent = `Not quite! You picked ${chosenItem ? chosenItem.name : 'an item'}.`;
+        feedbackIcon.className = 'fa-solid fa-circle-xmark text-rose-400 text-xl mt-0.5';
+        feedbackDetail.textContent = `The right tool was ${correctItem.name} in ${correctItem.drawer === 4 ? 'Lab Station' : 'Drawer 0' + correctItem.drawer}. ${currentQ.explanation}`;
+      }
+
+      document.getElementById('quizScoreDisplay').innerHTML = `${quizScore} <span class="text-xs text-slate-500 font-normal">pts</span>`;
+      document.getElementById('quizStreakDisplay').textContent = quizStreak;
+    }
+
+    function nextQuizQuestion() {
+      currentQuizIndex++;
+      loadQuizQuestion(currentQuizIndex);
+    }
+
+    function restartQuiz() {
+      currentQuizIndex = 0;
+      quizScore = 0;
+      quizStreak = 0;
+      document.getElementById('quizScoreDisplay').innerHTML = `0 <span class="text-xs text-slate-500 font-normal">pts</span>`;
+      document.getElementById('quizStreakDisplay').textContent = '0';
+      document.getElementById('quizSummaryModal').classList.add('hidden');
+      loadQuizQuestion(0);
+    }
+
+    function showQuizSummary() {
+      const accuracy = Math.round((quizScore / (quizQuestions.length * 100)) * 100);
+      document.getElementById('summaryFinalScore').textContent = quizScore;
+      document.getElementById('summaryAccuracy').textContent = `${Math.min(accuracy, 100)}%`;
+      document.getElementById('quizSummaryModal').classList.remove('hidden');
+      playSound('correct');
+    }
+
+    function closeSummaryModal() {
+      document.getElementById('quizSummaryModal').classList.add('hidden');
+    }
+
+    /* =========================================================
+       ASSEMBLY / SETUP MINI-GAME ENGINE
+       ========================================================= */
+    function loadAssemblyTarget(setupKey) {
+      activeAssemblyKey = setupKey;
+      assembledItems = [];
+      const setup = assemblySetups[setupKey];
+
+      document.getElementById('assemblyTargetTitle').textContent = setup.title;
+      document.getElementById('assemblyTargetDesc').textContent = setup.desc;
+
+      // Update button highlights
+      ['filtration', 'crucible', 'beaker_heating'].forEach(k => {
+        const btn = document.getElementById(`asmBtn${k.charAt(0).toUpperCase() + k.slice(1).replace('_heating', '')}`);
+        if (btn) {
+          if (k === setupKey) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-cyan-600 text-white';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white';
+          }
+        }
+      });
+
+      updateAssemblyStage();
+    }
+
+    function renderAssemblyPicker() {
+      const picker = document.getElementById('assemblyToolPicker');
+      picker.innerHTML = '';
+
+      labEquipment.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500 flex flex-col items-center text-center transition group';
+        btn.onclick = () => addToolToAssembly(item.id);
+        btn.innerHTML = `
+          <div class="w-10 h-10 flex items-center justify-center pointer-events-none">${item.svg}</div>
+          <span class="text-[10px] font-bold text-slate-200 group-hover:text-cyan-400 mt-1 truncate w-full">${item.name}</span>
+        `;
+        picker.appendChild(btn);
+      });
+    }
+
+    function addToolToAssembly(itemId) {
+      const setup = assemblySetups[activeAssemblyKey];
+      if (setup.required.includes(itemId)) {
+        if (!assembledItems.includes(itemId)) {
+          assembledItems.push(itemId);
+          playSound('clink');
+        }
+      } else {
+        playSound('wrong');
+      }
+      updateAssemblyStage();
+    }
+
+    function updateAssemblyStage() {
+      const setup = assemblySetups[activeAssemblyKey];
+      const stage = document.getElementById('assemblyGraphicStage');
+      const msg = document.getElementById('assemblyStatusMessage');
+      const countLabel = document.getElementById('assemblyRequiredCount');
+
+      countLabel.textContent = `${assembledItems.length} / ${setup.required.length} placed`;
+
+      let svgs = `
+        <!-- Base Ring Stand always rendered as backdrop -->
+        <svg viewBox="0 0 100 120" class="absolute inset-0 w-full h-full pointer-events-none opacity-40">
+          <rect x="20" y="105" width="60" height="8" rx="2" fill="#334155" stroke="#64748b" stroke-width="2"/>
+          <rect x="48" y="15" width="4" height="90" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1"/>
+        </svg>
+      `;
+
+      assembledItems.forEach(id => {
+        const item = labEquipment.find(i => i.id === id);
+        if (item) {
+          svgs += `<div class="absolute inset-0 flex items-center justify-center p-6 animate-in zoom-in-75">${item.svg}</div>`;
+        }
+      });
+
+      stage.innerHTML = svgs;
+
+      if (assembledItems.length === setup.required.length) {
+        msg.className = 'mt-4 text-xs font-mono px-4 py-2 rounded-xl bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold';
+        msg.textContent = 'Apparatus Complete! Perfect Lab Setup!';
+        playSound('correct');
+      } else {
+        msg.className = 'mt-4 text-xs font-mono px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-400';
+        msg.textContent = `Keep going! Add: ${setup.required.filter(r => !assembledItems.includes(r)).map(r => labEquipment.find(i => i.id === r).name).join(', ')}`;
+      }
+    }
+
+    /* Key listener for escape modal */
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeSummaryModal();
+      }
+    });
+  </script>
+</body>
+</html>
